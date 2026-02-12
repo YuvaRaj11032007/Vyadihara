@@ -221,19 +221,6 @@ Vyadiharah/
 
 ---
 
-## 🚀 Phased Rollout
-
-| Phase | Timeline | Focus |
-|-------|----------|-------|
-| **Foundation** | Months 1–3 | Infrastructure, HealthLake, ABDM integration, basic heatmap |
-| **Intelligence** | Months 4–6 | SageMaker models, Bedrock integration, QuickSight dashboards |
-| **Dispensing** | Months 7–9 | Pharmacy POS API, token lifecycle, fraud detection |
-| **Preventive Care** | Months 10–12 | Family linkage, preventive roadmaps, multi-language SMS |
-| **Pilot** | Months 13–15 | 10-district deployment, security audit, NHA certification |
-| **National Scale** | Months 16–24 | Rollout to 770+ districts, auto-scaling, continuous improvement |
-
----
-
 ## 🏆 AI for Bharat Hackathon 2026
 
 This project is our submission for the **AI for Bharat Hackathon 2026**. Vyadiharah demonstrates how India's ABDM infrastructure can be **supercharged with AI** to:
