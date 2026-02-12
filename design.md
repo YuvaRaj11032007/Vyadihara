@@ -33,89 +33,89 @@ Vyadiharah is designed around four guiding principles:
 ### 3.1 System Context Diagram (C4 — Level 1)
 
 ```
-                                    ┌──────────────────────┐
-                                    │     CITIZENS         │
-                                    │  (ABHA Holders)      │
-                                    └──────────┬───────────┘
-                                               │ SMS Alerts &
-                                               │ Web Portal
-                                               ▼
-┌──────────────────┐            ┌──────────────────────────────────┐           ┌──────────────────┐
-│                  │  FHIR R4   │                                  │ Dashboards│                  │
-│  CLINICS &       │───────────▶│         VYADIHARAH               │◀──────────│  HEALTH OFFICERS │
-│  HOSPITALS       │            │         PLATFORM                 │           │  & EPIDEMIOL.    │
-│  (HIP / HRP)    │            │                                  │           │                  │
-└──────────────────┘            │  ┌────────┐  ┌────────────────┐  │           └──────────────────┘
-                                │  │ AI     │  │ Surveillance   │  │
-                                │  │ Engine │  │ Engine         │  │
-┌──────────────────┐            │  └────────┘  └────────────────┘  │           ┌──────────────────┐
-│                  │  REST API  │  ┌────────┐  ┌────────────────┐  │  Alerts   │                  │
-│  PHARMACIES      │◀──────────▶│  │ Smart  │  │ Consent &      │  │──────────▶│  REGULATORY      │
-│  (POS Terminals) │            │  │ Disp.  │  │ Identity       │  │           │  AUTHORITIES     │
-│                  │            │  └────────┘  └────────────────┘  │           │                  │
-└──────────────────┘            └──────────────┬───────────────────┘           └──────────────────┘
-                                               │
-                                               │ ABDM APIs
-                                               ▼
-                                    ┌──────────────────────┐
-                                    │     ABDM GATEWAY     │
-                                    │  (NHA Infrastructure)│
-                                    └──────────────────────┘
+                                    +----------------------+
+                                    |     CITIZENS         |
+                                    |  (ABHA Holders)      |
+                                    +----------+-----------+
+                                               | SMS Alerts &
+                                               | Web Portal
+                                               v
++------------------+            +----------------------------------+           +------------------+
+|                  |  FHIR R4   |                                  | Dashboards|                  |
+|  CLINICS &       |----------->|         VYADIHARAH               |<----------|  HEALTH OFFICERS |
+|  HOSPITALS       |            |         PLATFORM                 |           |  & EPIDEMIOL.    |
+|  (HIP / HRP)    |            |                                  |           |                  |
++------------------+            |  +--------+  +----------------+  |           +------------------+
+                                |  | AI     |  | Surveillance   |  |
+                                |  | Engine |  | Engine         |  |
++------------------+            |  +--------+  +----------------+  |           +------------------+
+|                  |  REST API  |  +--------+  +----------------+  |  Alerts   |                  |
+|  PHARMACIES      |<---------->|  | Smart  |  | Consent &      |  |---------->|  REGULATORY      |
+|  (POS Terminals) |            |  | Disp.  |  | Identity       |  |           |  AUTHORITIES     |
+|                  |            |  +--------+  +----------------+  |           |                  |
++------------------+            +--------------+-------------------+           +------------------+
+                                               |
+                                               | ABDM APIs
+                                               v
+                                    +----------------------+
+                                    |     ABDM GATEWAY     |
+                                    |  (NHA Infrastructure)|
+                                    +----------------------+
 ```
 
 ### 3.2 Container Diagram (C4 — Level 2)
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────────────────┐
-│                              VYADIHARAH PLATFORM (AWS ap-south-1)                       │
-│                                                                                         │
-│  ┌─────────────────────────────────────────────────────────────────────────────────────┐ │
-│  │                           API LAYER (Amazon API Gateway)                            │ │
-│  │                                                                                     │ │
-│  │  /v1/surveillance/*    /v1/lineage/*    /v1/dispensing/*    /v1/consent/*            │ │
-│  └────────────┬───────────────┬──────────────────┬────────────────┬─────────────────────┘ │
-│               │               │                  │                │                       │
-│               ▼               ▼                  ▼                ▼                       │
-│  ┌────────────────┐ ┌────────────────┐ ┌─────────────────┐ ┌─────────────────┐           │
-│  │  Surveillance  │ │   Lineage      │ │   Dispensing    │ │   Consent &     │           │
-│  │  Service       │ │   Service      │ │   Service       │ │   Identity Svc  │           │
-│  │  (Lambda)      │ │   (Lambda)     │ │   (Lambda)      │ │   (Lambda)      │           │
-│  └───────┬────────┘ └───────┬────────┘ └────────┬────────┘ └────────┬────────┘           │
-│          │                  │                   │                   │                     │
-│          ▼                  ▼                   ▼                   ▼                     │
-│  ┌──────────────────────────────────────────────────────────────────────────────────┐     │
-│  │                         EVENT BUS (Amazon EventBridge)                           │     │
-│  └──────────────────────────────────────────────────────────────────────────────────┘     │
-│          │                  │                   │                   │                     │
-│          ▼                  ▼                   │                   │                     │
-│  ┌────────────────┐ ┌────────────────┐          │                   │                     │
-│  │  SageMaker     │ │  Bedrock       │          │                   │                     │
-│  │  Inference     │ │  (Claude 3.5)  │          │                   │                     │
-│  │  Endpoint      │ │                │          │                   │                     │
-│  └────────────────┘ └────────────────┘          │                   │                     │
-│                                                 │                   │                     │
-│  ┌──────────────────────────────────────────────────────────────────────────────────┐     │
-│  │                              DATA LAYER                                          │     │
-│  │                                                                                  │     │
-│  │  ┌──────────────────┐  ┌────────────────┐  ┌────────────────┐  ┌──────────────┐  │     │
-│  │  │  Amazon          │  │  Amazon        │  │  Amazon        │  │  Amazon S3   │  │     │
-│  │  │  HealthLake      │  │  DynamoDB      │  │  ElastiCache   │  │  (Data Lake) │  │     │
-│  │  │  (FHIR Store)    │  │  (Tokens,      │  │  (Redis)       │  │              │  │     │
-│  │  │                  │  │   Audit Logs)  │  │                │  │              │  │     │
-│  │  └──────────────────┘  └────────────────┘  └────────────────┘  └──────────────┘  │     │
-│  └──────────────────────────────────────────────────────────────────────────────────┘     │
-│                                                                                         │
-│  ┌──────────────────────────────────────────────────────────────────────────────────┐     │
-│  │                         PRESENTATION LAYER                                       │     │
-│  │                                                                                  │     │
-│  │  ┌──────────────────┐  ┌────────────────┐  ┌────────────────────────────────────┐ │     │
-│  │  │  Amazon          │  │  Amazon        │  │  Secure Web Portal                │ │     │
-│  │  │  QuickSight      │  │  Pinpoint      │  │  (S3 + CloudFront)               │ │     │
-│  │  │  (Dashboards)    │  │  (SMS)         │  │                                  │ │     │
-│  │  └──────────────────┘  └────────────────┘  └────────────────────────────────────┘ │     │
-│  └──────────────────────────────────────────────────────────────────────────────────┘     │
-│                                                                                         │
-└─────────────────────────────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------------------------------+
+|                              VYADIHARAH PLATFORM (AWS ap-south-1)                       |
+|                                                                                         |
+|  +-------------------------------------------------------------------------------------+ |
+|  |                           API LAYER (Amazon API Gateway)                            | |
+|  |                                                                                     | |
+|  |  /v1/surveillance/*    /v1/lineage/*    /v1/dispensing/*    /v1/consent/*            | |
+|  +------------+---------------+------------------+----------------+---------------------+ |
+|               |               |                  |                |                       |
+|               v               v                  v                v                       |
+|  +----------------+ +----------------+ +-----------------+ +-----------------+           |
+|  |  Surveillance  | |   Lineage      | |   Dispensing    | |   Consent &     |           |
+|  |  Service       | |   Service      | |   Service       | |   Identity Svc  |           |
+|  |  (Lambda)      | |   (Lambda)     | |   (Lambda)      | |   (Lambda)      |           |
+|  +-------+--------+ +-------+--------+ +--------+--------+ +--------+--------+           |
+|          |                  |                   |                   |                     |
+|          v                  v                   v                   v                     |
+|  +----------------------------------------------------------------------------------+     |
+|  |                         EVENT BUS (Amazon EventBridge)                           |     |
+|  +----------------------------------------------------------------------------------+     |
+|          |                  |                   |                   |                     |
+|          v                  v                   |                   |                     |
+|  +----------------+ +----------------+          |                   |                     |
+|  |  SageMaker     | |  Bedrock       |          |                   |                     |
+|  |  Inference     | |  (Claude 3.5)  |          |                   |                     |
+|  |  Endpoint      | |                |          |                   |                     |
+|  +----------------+ +----------------+          |                   |                     |
+|                                                 |                   |                     |
+|  +----------------------------------------------------------------------------------+     |
+|  |                              DATA LAYER                                          |     |
+|  |                                                                                  |     |
+|  |  +------------------+  +----------------+  +----------------+  +--------------+  |     |
+|  |  |  Amazon          |  |  Amazon        |  |  Amazon        |  |  Amazon S3   |  |     |
+|  |  |  HealthLake      |  |  DynamoDB      |  |  ElastiCache   |  |  (Data Lake) |  |     |
+|  |  |  (FHIR Store)    |  |  (Tokens,      |  |  (Redis)       |  |              |  |     |
+|  |  |                  |  |   Audit Logs)  |  |                |  |              |  |     |
+|  |  +------------------+  +----------------+  +----------------+  +--------------+  |     |
+|  +----------------------------------------------------------------------------------+     |
+|                                                                                         |
+|  +----------------------------------------------------------------------------------+     |
+|  |                         PRESENTATION LAYER                                       |     |
+|  |                                                                                  |     |
+|  |  +------------------+  +----------------+  +------------------------------------+ |     |
+|  |  |  Amazon          |  |  Amazon        |  |  Secure Web Portal                | |     |
+|  |  |  QuickSight      |  |  Pinpoint      |  |  (S3 + CloudFront)               | |     |
+|  |  |  (Dashboards)    |  |  (SMS)         |  |                                  | |     |
+|  |  +------------------+  +----------------+  +------------------------------------+ |     |
+|  +----------------------------------------------------------------------------------+     |
+|                                                                                         |
++-----------------------------------------------------------------------------------------+
 ```
 
 ---
@@ -129,20 +129,20 @@ Vyadiharah is designed around four guiding principles:
 #### 4.1.1 Data Ingestion Pipeline
 
 ```
-  ABDM HIE ──▶ API Gateway ──▶ Lambda (Ingestor) ──▶ SQS (Buffer) ──▶ Lambda (Transformer)
-                                                                            │
-                                                                            ▼
+  ABDM HIE --> API Gateway --> Lambda (Ingestor) --> SQS (Buffer) --> Lambda (Transformer)
+                                                                            |
+                                                                            v
                                                                      Amazon HealthLake
                                                                      (FHIR R4 Store)
-                                                                            │
-                                                                            ▼
+                                                                            |
+                                                                            v
                                                                      EventBridge
                                                                      ("RecordIngested")
-                                                                            │
-                                                          ┌─────────────────┼─────────────────┐
-                                                          ▼                 ▼                 ▼
+                                                                            |
+                                                          +-----------------+-----------------+
+                                                          v                 v                 v
                                                    Anonymisation     Heatmap Updater    Alert Evaluator
-                                                   Pipeline          (→ S3 / QS)       (→ Pinpoint)
+                                                   Pipeline          (-> S3 / QS)       (-> Pinpoint)
 ```
 
 **Key Design Decisions:**
@@ -156,22 +156,22 @@ Vyadiharah is designed around four guiding principles:
 #### 4.1.2 Heatmap Generation
 
 ```
-┌──────────────────────────────────────────────────────────────────────┐
-│                     HEATMAP GENERATION PIPELINE                      │
-│                                                                      │
-│  1. Anonymised FHIR Conditions aggregated by district + ICD-10 code │
-│  2. Sliding-window computation (7-day, 14-day, 30-day)              │
-│  3. District Disease Burden Index (DDBI) calculation:                │
-│                                                                      │
-│     DDBI = w₁·(CaseVolume/Population) + w₂·GrowthRate               │
-│          + w₃·SeverityMix + w₄·(1 - CapacityUtilisation)            │
-│                                                                      │
-│     where w₁ + w₂ + w₃ + w₄ = 1 (configurable weights)             │
-│                                                                      │
-│  4. Results written to S3 (Parquet) → QuickSight SPICE dataset      │
-│  5. GeoJSON layer generated for map overlay                          │
-│  6. QuickSight auto-refreshes every 15 minutes via SPICE ingestion  │
-└──────────────────────────────────────────────────────────────────────┘
++----------------------------------------------------------------------+
+|                     HEATMAP GENERATION PIPELINE                      |
+|                                                                      |
+|  1. Anonymised FHIR Conditions aggregated by district + ICD-10 code |
+|  2. Sliding-window computation (7-day, 14-day, 30-day)              |
+|  3. District Disease Burden Index (DDBI) calculation:                |
+|                                                                      |
+|     DDBI = w₁·(CaseVolume/Population) + w₂·GrowthRate               |
+|          + w₃·SeverityMix + w₄·(1 - CapacityUtilisation)            |
+|                                                                      |
+|     where w₁ + w₂ + w₃ + w₄ = 1 (configurable weights)             |
+|                                                                      |
+|  4. Results written to S3 (Parquet) -> QuickSight SPICE dataset      |
+|  5. GeoJSON layer generated for map overlay                          |
+|  6. QuickSight auto-refreshes every 15 minutes via SPICE ingestion  |
++----------------------------------------------------------------------+
 ```
 
 #### 4.1.3 Predictive Alerting (SageMaker)
@@ -179,40 +179,40 @@ Vyadiharah is designed around four guiding principles:
 **Model Architecture:**
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                  PREDICTIVE FORECASTING PIPELINE                 │
-│                                                                  │
-│  ┌────────────────────────────────────────────────────────────┐  │
-│  │ TRAINING PIPELINE (Scheduled — Weekly)                     │  │
-│  │                                                            │  │
-│  │  Historical Data    ──▶  Feature Engineering  ──▶  Model  │  │
-│  │  (S3 Parquet)            (SageMaker Processing)   Training│  │
-│  │                                                   (DeepAR)│  │
-│  │                                                     │      │  │
-│  │                                                     ▼      │  │
-│  │                                              Model Registry│  │
-│  │                                              (SageMaker)   │  │
-│  └────────────────────────────────────────────────────────────┘  │
-│                                                                  │
-│  ┌────────────────────────────────────────────────────────────┐  │
-│  │ INFERENCE PIPELINE (Triggered — Every 6 hours)             │  │
-│  │                                                            │  │
-│  │  Latest DDBI Data  ──▶  SageMaker Endpoint  ──▶  Forecast │  │
-│  │  + Covariates            (Real-time Inference)    Results  │  │
-│  │   · Weather data                                    │      │  │
-│  │   · Seasonal patterns                               ▼      │  │
-│  │   · Mobility indices                          Threshold    │  │
-│  │                                               Evaluator    │  │
-│  │                                                     │      │  │
-│  │                                          ┌──────────┴────┐ │  │
-│  │                                          │               │ │  │
-│  │                                     Alert Generated  No Alert│ │
-│  │                                          │                  │ │
-│  │                                          ▼                  │ │
-│  │                                    EventBridge              │ │
-│  │                                    ("PredictiveAlert")      │ │
-│  └────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------+
+|                  PREDICTIVE FORECASTING PIPELINE                 |
+|                                                                  |
+|  +------------------------------------------------------------+  |
+|  | TRAINING PIPELINE (Scheduled — Weekly)                     |  |
+|  |                                                            |  |
+|  |  Historical Data    -->  Feature Engineering  -->  Model  |  |
+|  |  (S3 Parquet)            (SageMaker Processing)   Training|  |
+|  |                                                   (DeepAR)|  |
+|  |                                                     |      |  |
+|  |                                                     v      |  |
+|  |                                              Model Registry|  |
+|  |                                              (SageMaker)   |  |
+|  +------------------------------------------------------------+  |
+|                                                                  |
+|  +------------------------------------------------------------+  |
+|  | INFERENCE PIPELINE (Triggered — Every 6 hours)             |  |
+|  |                                                            |  |
+|  |  Latest DDBI Data  -->  SageMaker Endpoint  -->  Forecast |  |
+|  |  + Covariates            (Real-time Inference)    Results  |  |
+|  |   · Weather data                                    |      |  |
+|  |   · Seasonal patterns                               v      |  |
+|  |   · Mobility indices                          Threshold    |  |
+|  |                                               Evaluator    |  |
+|  |                                                     |      |  |
+|  |                                          +----------+----+ |  |
+|  |                                          |               | |  |
+|  |                                     Alert Generated  No Alert| |
+|  |                                          |                  | |
+|  |                                          v                  | |
+|  |                                    EventBridge              | |
+|  |                                    ("PredictiveAlert")      | |
+|  +------------------------------------------------------------+  |
++-----------------------------------------------------------------+
 ```
 
 **Feature Vector per District per Time Step:**
@@ -245,37 +245,37 @@ Vyadiharah is designed around four guiding principles:
 #### 4.2.1 Family Linkage & Consent Flow
 
 ```
-  ┌─────────┐     ┌────────────────────┐     ┌──────────────────────┐     ┌─────────────┐
-  │ Citizen  │────▶│ Vyadiharah Portal  │────▶│ ABDM Consent Manager │────▶│ Family      │
-  │ (ABHA)  │     │ (Link Family)      │     │ (Purpose: Hereditary │     │ Member's    │
-  │         │     │                    │     │  Risk Analysis)      │     │ ABHA Consent│
-  └─────────┘     └────────────────────┘     └──────────┬───────────┘     └──────┬──────┘
-                                                        │                        │
-                                                        │  Consent Granted       │
-                                                        ▼                        ▼
-                                               ┌────────────────────┐   ┌────────────────┐
-                                               │ Lineage Service    │   │ HealthLake     │
-                                               │ (Family Graph)     │◀──│ (Family FHIR)  │
-                                               └────────┬───────────┘   └────────────────┘
-                                                        │
-                                                        ▼
-                                               ┌────────────────────┐
-                                               │ Amazon Bedrock     │
-                                               │ (Claude 3.5)       │
-                                               │                    │
-                                               │ Prompt: Analyse    │
-                                               │ family history for │
-                                               │ hereditary risks   │
-                                               └────────┬───────────┘
-                                                        │
-                                                        ▼
-                                               ┌────────────────────┐
-                                               │ Risk Report        │
-                                               │ (Stored in         │
-                                               │  HealthLake as     │
-                                               │  RiskAssessment    │
-                                               │  FHIR Resource)    │
-                                               └────────────────────┘
+  +---------+     +--------------------+     +----------------------+     +-------------+
+  | Citizen  |---->| Vyadiharah Portal  |---->| ABDM Consent Manager |---->| Family      |
+  | (ABHA)  |     | (Link Family)      |     | (Purpose: Hereditary |     | Member's    |
+  |         |     |                    |     |  Risk Analysis)      |     | ABHA Consent|
+  +---------+     +--------------------+     +----------+-----------+     +------+------+
+                                                        |                        |
+                                                        |  Consent Granted       |
+                                                        v                        v
+                                               +--------------------+   +----------------+
+                                               | Lineage Service    |   | HealthLake     |
+                                               | (Family Graph)     |<--| (Family FHIR)  |
+                                               +--------+-----------+   +----------------+
+                                                        |
+                                                        v
+                                               +--------------------+
+                                               | Amazon Bedrock     |
+                                               | (Claude 3.5)       |
+                                               |                    |
+                                               | Prompt: Analyse    |
+                                               | family history for |
+                                               | hereditary risks   |
+                                               +--------+-----------+
+                                                        |
+                                                        v
+                                               +--------------------+
+                                               | Risk Report        |
+                                               | (Stored in         |
+                                               |  HealthLake as     |
+                                               |  RiskAssessment    |
+                                               |  FHIR Resource)    |
+                                               +--------------------+
 ```
 
 #### 4.2.2 Bedrock Prompt Engineering (Claude 3.5)
@@ -341,28 +341,28 @@ OUTPUT FORMAT: JSON with fields: sms_summary, detailed_roadmap, urgency_level
 
 ```
 EventBridge ("PredictiveAlert")
-        │
-        ▼
+        |
+        v
 Lambda: IdentifyVulnerablePopulation
-        │
-        │  Query HealthLake for individuals in affected district
-        │  with HIGH / VERY HIGH risk for related conditions
-        │
-        ▼
+        |
+        |  Query HealthLake for individuals in affected district
+        |  with HIGH / VERY HIGH risk for related conditions
+        |
+        v
 SQS: RoadmapGenerationQueue
-        │
-        ▼
+        |
+        v
 Lambda: GenerateRoadmap (Bedrock Claude 3.5)
-        │
-        │  Per-individual roadmap generation
-        │  Concurrency: 50 (rate-limited to Bedrock throughput)
-        │
-        ▼
+        |
+        |  Per-individual roadmap generation
+        |  Concurrency: 50 (rate-limited to Bedrock throughput)
+        |
+        v
 Lambda: DeliverRoadmap
-        │
-        ├──▶ Amazon Pinpoint (SMS — summary)
-        │
-        └──▶ S3 + CloudFront (Web Portal — full roadmap)
+        |
+        +--> Amazon Pinpoint (SMS — summary)
+        |
+        +--> S3 + CloudFront (Web Portal — full roadmap)
 ```
 
 ---
@@ -374,27 +374,27 @@ Lambda: DeliverRoadmap
 #### 4.3.1 Swipe-to-Validate Flow
 
 ```
-  ┌──────────────────┐                    ┌───────────────────────────────────┐
-  │  PHARMACY POS    │                    │       VYADIHARAH DISPENSING SVC   │
-  │  TERMINAL        │                    │                                   │
-  │                  │   1. ABHA ID       │                                   │
-  │  [ABHA Card      │──────────────────▶ │  ┌──────────────────────────────┐ │
-  │   Swipe/QR/NFC]  │                    │  │ a. Validate ABHA via         │ │
-  │                  │                    │  │    ABDM Registry              │ │
-  │                  │   2. Active Rx     │  │ b. Fetch active prescriptions│ │
-  │                  │◀────────────────── │  │    from HealthLake            │ │
-  │                  │                    │  │ c. Check drug interactions    │ │
-  │  Pharmacist      │                    │  │    & allergy alerts           │ │
-  │  selects items   │   3. Dispense Req  │  │ d. Generate dispensing token  │ │
-  │  & confirms      │──────────────────▶ │  └──────────────────────────────┘ │
-  │                  │                    │                                   │
-  │                  │   4. Confirmation  │  ┌──────────────────────────────┐ │
-  │                  │◀────────────────── │  │ e. Burn token (DynamoDB)     │ │
-  │                  │      + Receipt     │  │ f. Write audit log           │ │
-  │                  │                    │  │ g. Update HealthLake         │ │
-  │                  │                    │  │    (MedicationDispense)      │ │
-  │                  │                    │  └──────────────────────────────┘ │
-  └──────────────────┘                    └───────────────────────────────────┘
+  +------------------+                    +-----------------------------------+
+  |  PHARMACY POS    |                    |       VYADIHARAH DISPENSING SVC   |
+  |  TERMINAL        |                    |                                   |
+  |                  |   1. ABHA ID       |                                   |
+  |  [ABHA Card      |------------------> |  +------------------------------+ |
+  |   Swipe/QR/NFC]  |                    |  | a. Validate ABHA via         | |
+  |                  |                    |  |    ABDM Registry              | |
+  |                  |   2. Active Rx     |  | b. Fetch active prescriptions| |
+  |                  |<------------------ |  |    from HealthLake            | |
+  |                  |                    |  | c. Check drug interactions    | |
+  |  Pharmacist      |                    |  |    & allergy alerts           | |
+  |  selects items   |   3. Dispense Req  |  | d. Generate dispensing token  | |
+  |  & confirms      |------------------> |  +------------------------------+ |
+  |                  |                    |                                   |
+  |                  |   4. Confirmation  |  +------------------------------+ |
+  |                  |<------------------ |  | e. Burn token (DynamoDB)     | |
+  |                  |      + Receipt     |  | f. Write audit log           | |
+  |                  |                    |  | g. Update HealthLake         | |
+  |                  |                    |  |    (MedicationDispense)      | |
+  |                  |                    |  +------------------------------+ |
+  +------------------+                    +-----------------------------------+
 ```
 
 #### 4.3.2 Token Data Model (DynamoDB)
@@ -435,30 +435,30 @@ Lambda: DeliverRoadmap
 #### 4.3.3 Token State Machine
 
 ```
-                   ┌─────────────────┐
-                   │                 │
-        Rx Created │     ACTIVE      │
-        ──────────▶│                 │
-                   └────────┬────────┘
-                            │
-              ┌─────────────┼─────────────┐
-              │             │             │
-              ▼             ▼             ▼
-   ┌──────────────┐  ┌───────────┐  ┌──────────┐
-   │  PARTIALLY   │  │  BURNED   │  │ EXPIRED  │
-   │  DISPENSED   │  │ (Terminal) │  │(Terminal)│
-   │              │  │           │  │          │
-   └──────┬───────┘  └───────────┘  └──────────┘
-          │
-          │ Remaining items dispensed
-          ▼
-   ┌───────────┐
-   │  BURNED   │
-   │ (Terminal) │
-   └───────────┘
+                   +-----------------+
+                   |                 |
+        Rx Created |     ACTIVE      |
+        ---------->|                 |
+                   +--------+--------+
+                            |
+              +-------------+-------------+
+              |             |             |
+              v             v             v
+   +--------------+  +-----------+  +----------+
+   |  PARTIALLY   |  |  BURNED   |  | EXPIRED  |
+   |  DISPENSED   |  | (Terminal) |  |(Terminal)|
+   |              |  |           |  |          |
+   +------+-------+  +-----------+  +----------+
+          |
+          | Remaining items dispensed
+          v
+   +-----------+
+   |  BURNED   |
+   | (Terminal) |
+   +-----------+
 
   Additional transition:
-  ANY non-terminal state ──▶ REVOKED (by prescriber or regulatory action)
+  ANY non-terminal state --> REVOKED (by prescriber or regulatory action)
 ```
 
 #### 4.3.4 Fraud Detection Patterns
@@ -480,38 +480,38 @@ Lambda: DeliverRoadmap
 #### 4.4.1 Consent Flow
 
 ```
-┌──────────────────────────────────────────────────────────────────────────┐
-│                     ABDM CONSENT FRAMEWORK INTEGRATION                   │
-│                                                                          │
-│  1. Vyadiharah (as HIU) sends Consent Request to ABDM Consent Manager   │
-│     ─ Purpose: e.g., "Hereditary Risk Analysis"                         │
-│     ─ Data scope: Conditions, FamilyMemberHistory, Observations         │
-│     ─ Date range:  e.g., last 10 years                                  │
-│     ─ Expiry: e.g., 90 days                                             │
-│                                                                          │
-│  2. ABDM Consent Manager notifies the citizen (via ABHA app / SMS)      │
-│                                                                          │
-│  3. Citizen GRANTS or DENIES the consent request                         │
-│                                                                          │
-│  4. If GRANTED:                                                          │
-│     a. ABDM returns a signed Consent Artefact (JWT)                     │
-│     b. Vyadiharah uses the artefact to fetch data from HIP via ABDM HIE│
-│     c. Data is processed within the scope & expiry of the consent        │
-│     d. Upon expiry, all non-anonymised data derived under this consent   │
-│        is purged                                                         │
-│                                                                          │
-│  5. Citizen can REVOKE consent at any time via ABHA app                  │
-│     → Vyadiharah receives revocation callback                            │
-│     → Triggers immediate data purge for that consent scope               │
-│                                                                          │
-└──────────────────────────────────────────────────────────────────────────┘
++--------------------------------------------------------------------------+
+|                     ABDM CONSENT FRAMEWORK INTEGRATION                   |
+|                                                                          |
+|  1. Vyadiharah (as HIU) sends Consent Request to ABDM Consent Manager   |
+|     - Purpose: e.g., "Hereditary Risk Analysis"                         |
+|     - Data scope: Conditions, FamilyMemberHistory, Observations         |
+|     - Date range:  e.g., last 10 years                                  |
+|     - Expiry: e.g., 90 days                                             |
+|                                                                          |
+|  2. ABDM Consent Manager notifies the citizen (via ABHA app / SMS)      |
+|                                                                          |
+|  3. Citizen GRANTS or DENIES the consent request                         |
+|                                                                          |
+|  4. If GRANTED:                                                          |
+|     a. ABDM returns a signed Consent Artefact (JWT)                     |
+|     b. Vyadiharah uses the artefact to fetch data from HIP via ABDM HIE|
+|     c. Data is processed within the scope & expiry of the consent        |
+|     d. Upon expiry, all non-anonymised data derived under this consent   |
+|        is purged                                                         |
+|                                                                          |
+|  5. Citizen can REVOKE consent at any time via ABHA app                  |
+|     -> Vyadiharah receives revocation callback                            |
+|     -> Triggers immediate data purge for that consent scope               |
+|                                                                          |
++--------------------------------------------------------------------------+
 ```
 
 #### 4.4.2 Identity Verification for Pharmacy
 
 | Method          | Implementation                                  | Fallback                          |
 |-----------------|--------------------------------------------------|-----------------------------------|
-| **ABHA Card Swipe** | Magnetic stripe / chip read → ABHA ID extracted | Manual ABHA number entry          |
+| **ABHA Card Swipe** | Magnetic stripe / chip read -> ABHA ID extracted | Manual ABHA number entry          |
 | **QR Code Scan**    | ABHA QR from citizen's app / printed card       | Manual entry                      |
 | **NFC Tap**         | NFC-enabled ABHA card (future)                  | QR / manual entry                 |
 | **Biometric**       | Aadhaar-linked fingerprint (via ABHA e-KYC)     | OTP-based authentication          |
@@ -523,40 +523,40 @@ Lambda: DeliverRoadmap
 ### 5.1 FHIR Resource Model
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        HEALTHLAKE FHIR RESOURCE MAP                         │
-│                                                                             │
-│  ┌──────────────┐      ┌─────────────────┐      ┌───────────────────┐      │
-│  │   Patient     │─────│ FamilyMember     │      │ Practitioner      │      │
-│  │   (ABHA ID)  │      │ History          │      │ (NMC Reg. No.)   │      │
-│  └──────┬───────┘      └─────────────────┘      └────────┬──────────┘      │
-│         │                                                 │                 │
-│    ┌────┼──────────────┬──────────────┬───────────────────┐│                 │
-│    │    │              │              │                   ││                 │
-│    ▼    ▼              ▼              ▼                   ▼▼                 │
-│  ┌──────────┐  ┌────────────┐  ┌───────────┐  ┌──────────────────┐         │
-│  │Condition │  │Observation │  │Allergy     │  │MedicationRequest │         │
-│  │(ICD-10)  │  │(LOINC)     │  │Intolerance │  │(Prescription)    │         │
-│  └──────────┘  └────────────┘  └───────────┘  └────────┬─────────┘         │
-│                                                         │                   │
-│                                                         ▼                   │
-│                                                ┌──────────────────┐         │
-│                                                │MedicationDispense│         │
-│                                                │(Pharmacy Event)  │         │
-│                                                └──────────────────┘         │
-│                                                                             │
-│  ┌───────────────────┐      ┌────────────────────────┐                      │
-│  │  RiskAssessment   │      │ CommunicationRequest   │                      │
-│  │  (AI-generated    │      │ (Pinpoint SMS/Alert)   │                      │
-│  │   hereditary risk)│      │                        │                      │
-│  └───────────────────┘      └────────────────────────┘                      │
-│                                                                             │
-│  ┌───────────────────┐                                                      │
-│  │  CarePlan          │                                                      │
-│  │  (Preventive       │                                                      │
-│  │   Roadmap)         │                                                      │
-│  └───────────────────┘                                                      │
-└─────────────────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------------------+
+|                        HEALTHLAKE FHIR RESOURCE MAP                         |
+|                                                                             |
+|  +--------------+      +-----------------+      +-------------------+      |
+|  |   Patient     |-----| FamilyMember     |      | Practitioner      |      |
+|  |   (ABHA ID)  |      | History          |      | (NMC Reg. No.)   |      |
+|  +------+-------+      +-----------------+      +--------+----------+      |
+|         |                                                 |                 |
+|    +----+--------------+--------------+-------------------+|                 |
+|    |    |              |              |                   ||                 |
+|    v    v              v              v                   vv                 |
+|  +----------+  +------------+  +-----------+  +------------------+         |
+|  |Condition |  |Observation |  |Allergy     |  |MedicationRequest |         |
+|  |(ICD-10)  |  |(LOINC)     |  |Intolerance |  |(Prescription)    |         |
+|  +----------+  +------------+  +-----------+  +--------+---------+         |
+|                                                         |                   |
+|                                                         v                   |
+|                                                +------------------+         |
+|                                                |MedicationDispense|         |
+|                                                |(Pharmacy Event)  |         |
+|                                                +------------------+         |
+|                                                                             |
+|  +-------------------+      +------------------------+                      |
+|  |  RiskAssessment   |      | CommunicationRequest   |                      |
+|  |  (AI-generated    |      | (Pinpoint SMS/Alert)   |                      |
+|  |   hereditary risk)|      |                        |                      |
+|  +-------------------+      +------------------------+                      |
+|                                                                             |
+|  +-------------------+                                                      |
+|  |  CarePlan          |                                                      |
+|  |  (Preventive       |                                                      |
+|  |   Roadmap)         |                                                      |
+|  +-------------------+                                                      |
++-----------------------------------------------------------------------------+
 ```
 
 ### 5.2 Data Flow Summary
@@ -582,56 +582,56 @@ Lambda: DeliverRoadmap
 ### 6.1 Network Topology
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           AWS VPC (10.0.0.0/16)                             │
-│                           ap-south-1 (Mumbai)                               │
-│                                                                             │
-│  ┌──────────────────────────────────────────────────────────────────────┐   │
-│  │  PUBLIC SUBNET (10.0.1.0/24 & 10.0.2.0/24 — Multi-AZ)              │   │
-│  │                                                                      │   │
-│  │  ┌──────────────┐  ┌───────────────┐  ┌────────────────────────┐    │   │
-│  │  │ NAT Gateway  │  │ ALB           │  │ CloudFront             │    │   │
-│  │  │ (outbound)   │  │ (API routing) │  │ (Web Portal CDN)       │    │   │
-│  │  └──────────────┘  └───────────────┘  └────────────────────────┘    │   │
-│  └──────────────────────────────────────────────────────────────────────┘   │
-│                                                                             │
-│  ┌──────────────────────────────────────────────────────────────────────┐   │
-│  │  PRIVATE SUBNET (10.0.10.0/24 & 10.0.11.0/24 — Multi-AZ)           │   │
-│  │                                                                      │   │
-│  │  ┌──────────────┐  ┌───────────────┐  ┌────────────────────────┐    │   │
-│  │  │ Lambda       │  │ ElastiCache   │  │ SageMaker              │    │   │
-│  │  │ Functions    │  │ (Redis)       │  │ Endpoints              │    │   │
-│  │  └──────────────┘  └───────────────┘  └────────────────────────┘    │   │
-│  └──────────────────────────────────────────────────────────────────────┘   │
-│                                                                             │
-│  ┌──────────────────────────────────────────────────────────────────────┐   │
-│  │  ISOLATED SUBNET (10.0.20.0/24 & 10.0.21.0/24 — Multi-AZ)          │   │
-│  │                                                                      │   │
-│  │  ┌──────────────┐  ┌───────────────┐                                │   │
-│  │  │ HealthLake   │  │ DynamoDB      │  (VPC Endpoints only)          │   │
-│  │  │ (FHIR Store) │  │ (Tokens/Audit)│                                │   │
-│  │  └──────────────┘  └───────────────┘                                │   │
-│  └──────────────────────────────────────────────────────────────────────┘   │
-│                                                                             │
-│  ┌──────────────────────────────────────────────────────────────────────┐   │
-│  │  VPC ENDPOINTS (PrivateLink)                                         │   │
-│  │  · S3 Gateway Endpoint                                               │   │
-│  │  · DynamoDB Gateway Endpoint                                         │   │
-│  │  · HealthLake Interface Endpoint                                     │   │
-│  │  · SageMaker Interface Endpoint                                      │   │
-│  │  · Bedrock Interface Endpoint                                        │   │
-│  │  · KMS Interface Endpoint                                            │   │
-│  └──────────────────────────────────────────────────────────────────────┘   │
-│                                                                             │
-│  ┌──────────────────────────────────────────────────────────────────────┐   │
-│  │  WAF v2 (attached to ALB & CloudFront)                               │   │
-│  │  · Rate limiting (per-IP & per-ABHA)                                 │   │
-│  │  · SQL injection & XSS protection                                    │   │
-│  │  · Geo-restriction (India only for PHI endpoints)                    │   │
-│  │  · Bot mitigation                                                    │   │
-│  └──────────────────────────────────────────────────────────────────────┘   │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------------------+
+|                           AWS VPC (10.0.0.0/16)                             |
+|                           ap-south-1 (Mumbai)                               |
+|                                                                             |
+|  +----------------------------------------------------------------------+   |
+|  |  PUBLIC SUBNET (10.0.1.0/24 & 10.0.2.0/24 — Multi-AZ)              |   |
+|  |                                                                      |   |
+|  |  +--------------+  +---------------+  +------------------------+    |   |
+|  |  | NAT Gateway  |  | ALB           |  | CloudFront             |    |   |
+|  |  | (outbound)   |  | (API routing) |  | (Web Portal CDN)       |    |   |
+|  |  +--------------+  +---------------+  +------------------------+    |   |
+|  +----------------------------------------------------------------------+   |
+|                                                                             |
+|  +----------------------------------------------------------------------+   |
+|  |  PRIVATE SUBNET (10.0.10.0/24 & 10.0.11.0/24 — Multi-AZ)           |   |
+|  |                                                                      |   |
+|  |  +--------------+  +---------------+  +------------------------+    |   |
+|  |  | Lambda       |  | ElastiCache   |  | SageMaker              |    |   |
+|  |  | Functions    |  | (Redis)       |  | Endpoints              |    |   |
+|  |  +--------------+  +---------------+  +------------------------+    |   |
+|  +----------------------------------------------------------------------+   |
+|                                                                             |
+|  +----------------------------------------------------------------------+   |
+|  |  ISOLATED SUBNET (10.0.20.0/24 & 10.0.21.0/24 — Multi-AZ)          |   |
+|  |                                                                      |   |
+|  |  +--------------+  +---------------+                                |   |
+|  |  | HealthLake   |  | DynamoDB      |  (VPC Endpoints only)          |   |
+|  |  | (FHIR Store) |  | (Tokens/Audit)|                                |   |
+|  |  +--------------+  +---------------+                                |   |
+|  +----------------------------------------------------------------------+   |
+|                                                                             |
+|  +----------------------------------------------------------------------+   |
+|  |  VPC ENDPOINTS (PrivateLink)                                         |   |
+|  |  · S3 Gateway Endpoint                                               |   |
+|  |  · DynamoDB Gateway Endpoint                                         |   |
+|  |  · HealthLake Interface Endpoint                                     |   |
+|  |  · SageMaker Interface Endpoint                                      |   |
+|  |  · Bedrock Interface Endpoint                                        |   |
+|  |  · KMS Interface Endpoint                                            |   |
+|  +----------------------------------------------------------------------+   |
+|                                                                             |
+|  +----------------------------------------------------------------------+   |
+|  |  WAF v2 (attached to ALB & CloudFront)                               |   |
+|  |  · Rate limiting (per-IP & per-ABHA)                                 |   |
+|  |  · SQL injection & XSS protection                                    |   |
+|  |  · Geo-restriction (India only for PHI endpoints)                    |   |
+|  |  · Bot mitigation                                                    |   |
+|  +----------------------------------------------------------------------+   |
+|                                                                             |
++-----------------------------------------------------------------------------+
 ```
 
 ### 6.2 Encryption Strategy
@@ -660,33 +660,33 @@ Lambda: DeliverRoadmap
 ### 6.4 Audit Logging
 
 ```
-┌───────────────────────────────────────────────────────────────────────┐
-│                         AUDIT LOG ARCHITECTURE                        │
-│                                                                       │
-│  Every API call, data access, and state change produces an audit      │
-│  event with the following structure:                                   │
-│                                                                       │
-│  {                                                                    │
-│    "event_id":        "uuid",                                         │
-│    "timestamp":       "ISO 8601",                                     │
-│    "actor":           "IAM principal / ABHA ID / system",             │
-│    "action":          "READ | WRITE | DELETE | INVOKE | AUTH",        │
-│    "resource_type":   "Patient | Token | RiskAssessment | ...",       │
-│    "resource_id":     "FHIR resource ID / token ID",                  │
-│    "consent_id":      "ABDM consent artefact ID (if applicable)",     │
-│    "source_ip":       "IP address",                                   │
-│    "user_agent":      "client identifier",                            │
-│    "outcome":         "SUCCESS | FAILURE | DENIED",                   │
-│    "detail":          "human-readable description"                    │
-│  }                                                                    │
-│                                                                       │
-│  Storage:                                                             │
-│    · Real-time: DynamoDB (AuditLogs table) — 90 days hot             │
-│    · Archive:   S3 (audit-archive bucket) — 7 years cold             │
-│    · Monitoring: CloudWatch Logs (real-time streaming for alerts)     │
-│    · Integrity:  S3 Object Lock (WORM) for tamper evidence           │
-│                                                                       │
-└───────────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------------+
+|                         AUDIT LOG ARCHITECTURE                        |
+|                                                                       |
+|  Every API call, data access, and state change produces an audit      |
+|  event with the following structure:                                   |
+|                                                                       |
+|  {                                                                    |
+|    "event_id":        "uuid",                                         |
+|    "timestamp":       "ISO 8601",                                     |
+|    "actor":           "IAM principal / ABHA ID / system",             |
+|    "action":          "READ | WRITE | DELETE | INVOKE | AUTH",        |
+|    "resource_type":   "Patient | Token | RiskAssessment | ...",       |
+|    "resource_id":     "FHIR resource ID / token ID",                  |
+|    "consent_id":      "ABDM consent artefact ID (if applicable)",     |
+|    "source_ip":       "IP address",                                   |
+|    "user_agent":      "client identifier",                            |
+|    "outcome":         "SUCCESS | FAILURE | DENIED",                   |
+|    "detail":          "human-readable description"                    |
+|  }                                                                    |
+|                                                                       |
+|  Storage:                                                             |
+|    · Real-time: DynamoDB (AuditLogs table) — 90 days hot             |
+|    · Archive:   S3 (audit-archive bucket) — 7 years cold             |
+|    · Monitoring: CloudWatch Logs (real-time streaming for alerts)     |
+|    · Integrity:  S3 Object Lock (WORM) for tamper evidence           |
+|                                                                       |
++-----------------------------------------------------------------------+
 ```
 
 ---
@@ -706,19 +706,19 @@ Lambda: DeliverRoadmap
 ### 7.2 Deployment Pipeline
 
 ```
-┌──────────┐     ┌──────────┐     ┌──────────────┐     ┌──────────────┐     ┌─────────┐
-│  GitHub   │────▶│ CodeBuild│────▶│  CDK Deploy  │────▶│  Integration │────▶│  PROD   │
-│  (main)   │     │  (Build  │     │  (Staging)   │     │  Tests       │     │ Deploy  │
-│           │     │  + Test) │     │              │     │  (Staging)   │     │         │
-└──────────┘     └──────────┘     └──────────────┘     └──────────────┘     └─────────┘
-                                                                              │
-                                                              Manual Approval ▲
-                                                              (Production)    │
-                                                                              │
-                                                        ┌─────────────────────┘
-                                                        │ Canary Deployment
-                                                        │ (10% → 50% → 100%)
-                                                        └─────────────────────
++----------+     +----------+     +--------------+     +--------------+     +---------+
+|  GitHub   |---->| CodeBuild|---->|  CDK Deploy  |---->|  Integration |---->|  PROD   |
+|  (main)   |     |  (Build  |     |  (Staging)   |     |  Tests       |     | Deploy  |
+|           |     |  + Test) |     |              |     |  (Staging)   |     |         |
++----------+     +----------+     +--------------+     +--------------+     +---------+
+                                                                              |
+                                                              Manual Approval ^
+                                                              (Production)    |
+                                                                              |
+                                                        +---------------------+
+                                                        | Canary Deployment
+                                                        | (10% -> 50% -> 100%)
+                                                        +---------------------
 ```
 
 ### 7.3 Environments
@@ -737,51 +737,51 @@ Lambda: DeliverRoadmap
 ### 8.1 Monitoring Stack
 
 ```
-┌──────────────────────────────────────────────────────────────────┐
-│                     OBSERVABILITY ARCHITECTURE                    │
-│                                                                  │
-│  ┌────────────────────────────────────────────────────────────┐  │
-│  │  METRICS (CloudWatch Metrics)                              │  │
-│  │  · Lambda: invocations, errors, duration, throttles       │  │
-│  │  · API Gateway: 4xx/5xx rates, latency P50/P95/P99        │  │
-│  │  · HealthLake: read/write latency, throttled requests     │  │
-│  │  · DynamoDB: RCU/WCU consumption, throttled requests      │  │
-│  │  · SageMaker: inference latency, model errors             │  │
-│  │  · Pinpoint: delivery rate, bounce rate                   │  │
-│  └────────────────────────────────────────────────────────────┘  │
-│                                                                  │
-│  ┌────────────────────────────────────────────────────────────┐  │
-│  │  LOGS (CloudWatch Logs)                                    │  │
-│  │  · Structured JSON logs from all Lambda functions          │  │
-│  │  · API Gateway access logs                                 │  │
-│  │  · Audit event stream                                      │  │
-│  │  · Retention: 90 days hot, 7 years archived to S3          │  │
-│  └────────────────────────────────────────────────────────────┘  │
-│                                                                  │
-│  ┌────────────────────────────────────────────────────────────┐  │
-│  │  TRACES (AWS X-Ray)                                        │  │
-│  │  · End-to-end request tracing across Lambda, API GW,       │  │
-│  │    HealthLake, DynamoDB, Bedrock, SageMaker                │  │
-│  │  · Sampling rate: 5% (normal), 100% (on-error)            │  │
-│  └────────────────────────────────────────────────────────────┘  │
-│                                                                  │
-│  ┌────────────────────────────────────────────────────────────┐  │
-│  │  ALARMS (CloudWatch Alarms → SNS → PagerDuty)             │  │
-│  │  · P1: Dispensing API 5xx rate > 1% for 5 min              │  │
-│  │  · P1: HealthLake write failures > 0 for 10 min            │  │
-│  │  · P2: Heatmap staleness > 30 min                          │  │
-│  │  · P2: Bedrock invocation error rate > 5%                  │  │
-│  │  · P3: SageMaker inference latency P99 > 60s               │  │
-│  └────────────────────────────────────────────────────────────┘  │
-│                                                                  │
-│  ┌────────────────────────────────────────────────────────────┐  │
-│  │  DASHBOARDS                                                │  │
-│  │  · Ops Dashboard (CloudWatch) — system health overview     │  │
-│  │  · Epidemiology Dashboard (QuickSight) — disease intel     │  │
-│  │  · Dispensing Dashboard (QuickSight) — pharmacy metrics    │  │
-│  │  · AI Performance Dashboard — model accuracy over time     │  │
-│  └────────────────────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────────────────┘
++------------------------------------------------------------------+
+|                     OBSERVABILITY ARCHITECTURE                    |
+|                                                                  |
+|  +------------------------------------------------------------+  |
+|  |  METRICS (CloudWatch Metrics)                              |  |
+|  |  · Lambda: invocations, errors, duration, throttles       |  |
+|  |  · API Gateway: 4xx/5xx rates, latency P50/P95/P99        |  |
+|  |  · HealthLake: read/write latency, throttled requests     |  |
+|  |  · DynamoDB: RCU/WCU consumption, throttled requests      |  |
+|  |  · SageMaker: inference latency, model errors             |  |
+|  |  · Pinpoint: delivery rate, bounce rate                   |  |
+|  +------------------------------------------------------------+  |
+|                                                                  |
+|  +------------------------------------------------------------+  |
+|  |  LOGS (CloudWatch Logs)                                    |  |
+|  |  · Structured JSON logs from all Lambda functions          |  |
+|  |  · API Gateway access logs                                 |  |
+|  |  · Audit event stream                                      |  |
+|  |  · Retention: 90 days hot, 7 years archived to S3          |  |
+|  +------------------------------------------------------------+  |
+|                                                                  |
+|  +------------------------------------------------------------+  |
+|  |  TRACES (AWS X-Ray)                                        |  |
+|  |  · End-to-end request tracing across Lambda, API GW,       |  |
+|  |    HealthLake, DynamoDB, Bedrock, SageMaker                |  |
+|  |  · Sampling rate: 5% (normal), 100% (on-error)            |  |
+|  +------------------------------------------------------------+  |
+|                                                                  |
+|  +------------------------------------------------------------+  |
+|  |  ALARMS (CloudWatch Alarms -> SNS -> PagerDuty)             |  |
+|  |  · P1: Dispensing API 5xx rate > 1% for 5 min              |  |
+|  |  · P1: HealthLake write failures > 0 for 10 min            |  |
+|  |  · P2: Heatmap staleness > 30 min                          |  |
+|  |  · P2: Bedrock invocation error rate > 5%                  |  |
+|  |  · P3: SageMaker inference latency P99 > 60s               |  |
+|  +------------------------------------------------------------+  |
+|                                                                  |
+|  +------------------------------------------------------------+  |
+|  |  DASHBOARDS                                                |  |
+|  |  · Ops Dashboard (CloudWatch) — system health overview     |  |
+|  |  · Epidemiology Dashboard (QuickSight) — disease intel     |  |
+|  |  · Dispensing Dashboard (QuickSight) — pharmacy metrics    |  |
+|  |  · AI Performance Dashboard — model accuracy over time     |  |
+|  +------------------------------------------------------------+  |
++------------------------------------------------------------------+
 ```
 
 ### 8.2 Key SLIs / SLOs
@@ -805,7 +805,7 @@ Lambda: DeliverRoadmap
 | Component        | Strategy                        | RPO      | RTO      |
 |------------------|---------------------------------|----------|----------|
 | HealthLake       | Cross-region replication to ap-south-2 (Hyderabad) | 1 hour  | 4 hours |
-| DynamoDB         | Global Tables (ap-south-1 ↔ ap-south-2) | Near 0  | < 1 min |
+| DynamoDB         | Global Tables (ap-south-1 <-> ap-south-2) | Near 0  | < 1 min |
 | S3               | Cross-region replication        | 15 min   | < 1 hour |
 | Lambda / API GW  | Multi-region deployment (active-passive) | N/A    | 30 min  |
 | SageMaker        | Model artefacts replicated to S3 in DR region | 6 hours | 2 hours |
@@ -853,45 +853,45 @@ Lambda: DeliverRoadmap
 ## 11. Technology Stack Summary
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         VYADIHARAH TECHNOLOGY STACK                          │
-│                                                                             │
-│  ┌─────────────────────────────────────────────────────────────────────┐    │
-│  │                        PRESENTATION LAYER                           │    │
-│  │  Amazon QuickSight │ Amazon Pinpoint (SMS) │ CloudFront + S3 Portal │    │
-│  └─────────────────────────────────────────────────────────────────────┘    │
-│                                                                             │
-│  ┌─────────────────────────────────────────────────────────────────────┐    │
-│  │                        APPLICATION LAYER                            │    │
-│  │  API Gateway (REST) │ AWS Lambda (Python 3.12) │ EventBridge │ SQS  │    │
-│  └─────────────────────────────────────────────────────────────────────┘    │
-│                                                                             │
-│  ┌─────────────────────────────────────────────────────────────────────┐    │
-│  │                        AI / ML LAYER                                │    │
-│  │  Amazon Bedrock (Claude 3.5) │ Amazon SageMaker (DeepAR / Prophet) │    │
-│  └─────────────────────────────────────────────────────────────────────┘    │
-│                                                                             │
-│  ┌─────────────────────────────────────────────────────────────────────┐    │
-│  │                        DATA LAYER                                   │    │
-│  │  Amazon HealthLake (FHIR R4) │ DynamoDB │ ElastiCache │ S3 (Lake)  │    │
-│  └─────────────────────────────────────────────────────────────────────┘    │
-│                                                                             │
-│  ┌─────────────────────────────────────────────────────────────────────┐    │
-│  │                        SECURITY & GOVERNANCE                        │    │
-│  │  IAM │ KMS │ WAF v2 │ Secrets Manager │ CloudTrail │ GuardDuty     │    │
-│  └─────────────────────────────────────────────────────────────────────┘    │
-│                                                                             │
-│  ┌─────────────────────────────────────────────────────────────────────┐    │
-│  │                        OPERATIONS                                   │    │
-│  │  CloudWatch │ X-Ray │ CDK (IaC) │ CodePipeline │ CodeBuild         │    │
-│  └─────────────────────────────────────────────────────────────────────┘    │
-│                                                                             │
-│  ┌─────────────────────────────────────────────────────────────────────┐    │
-│  │                        EXTERNAL INTEGRATIONS                        │    │
-│  │  ABDM Gateway │ ABHA Registry │ ABDM Consent Manager │ ABDM HIE    │    │
-│  └─────────────────────────────────────────────────────────────────────┘    │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------------------+
+|                         VYADIHARAH TECHNOLOGY STACK                          |
+|                                                                             |
+|  +---------------------------------------------------------------------+    |
+|  |                        PRESENTATION LAYER                           |    |
+|  |  Amazon QuickSight | Amazon Pinpoint (SMS) | CloudFront + S3 Portal |    |
+|  +---------------------------------------------------------------------+    |
+|                                                                             |
+|  +---------------------------------------------------------------------+    |
+|  |                        APPLICATION LAYER                            |    |
+|  |  API Gateway (REST) | AWS Lambda (Python 3.12) | EventBridge | SQS  |    |
+|  +---------------------------------------------------------------------+    |
+|                                                                             |
+|  +---------------------------------------------------------------------+    |
+|  |                        AI / ML LAYER                                |    |
+|  |  Amazon Bedrock (Claude 3.5) | Amazon SageMaker (DeepAR / Prophet) |    |
+|  +---------------------------------------------------------------------+    |
+|                                                                             |
+|  +---------------------------------------------------------------------+    |
+|  |                        DATA LAYER                                   |    |
+|  |  Amazon HealthLake (FHIR R4) | DynamoDB | ElastiCache | S3 (Lake)  |    |
+|  +---------------------------------------------------------------------+    |
+|                                                                             |
+|  +---------------------------------------------------------------------+    |
+|  |                        SECURITY & GOVERNANCE                        |    |
+|  |  IAM | KMS | WAF v2 | Secrets Manager | CloudTrail | GuardDuty     |    |
+|  +---------------------------------------------------------------------+    |
+|                                                                             |
+|  +---------------------------------------------------------------------+    |
+|  |                        OPERATIONS                                   |    |
+|  |  CloudWatch | X-Ray | CDK (IaC) | CodePipeline | CodeBuild         |    |
+|  +---------------------------------------------------------------------+    |
+|                                                                             |
+|  +---------------------------------------------------------------------+    |
+|  |                        EXTERNAL INTEGRATIONS                        |    |
+|  |  ABDM Gateway | ABHA Registry | ABDM Consent Manager | ABDM HIE    |    |
+|  +---------------------------------------------------------------------+    |
+|                                                                             |
++-----------------------------------------------------------------------------+
 ```
 
 ---

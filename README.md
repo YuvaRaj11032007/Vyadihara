@@ -53,30 +53,30 @@ It transforms anonymised health records flowing through ABHA into:
 ## 🏗️ Architecture at a Glance
 
 ```
-                        ┌──────────────────┐
-                        │    CITIZENS       │
-                        │   (ABHA Holders)  │
-                        └────────┬─────────┘
-                                 │ SMS Alerts / Web Portal
-                                 ▼
-┌──────────────┐     ┌─────────────────────────────┐     ┌──────────────────┐
-│  CLINICS &   │────▶│      VYADIHARAH PLATFORM     │◀────│  HEALTH OFFICERS │
-│  HOSPITALS   │     │                               │     │  & EPIDEMIOL.    │
-└──────────────┘     │  ┌───────┐  ┌──────────────┐ │     └──────────────────┘
-                     │  │  AI   │  │ Surveillance │ │
-┌──────────────┐     │  │Engine │  │    Engine     │ │     ┌──────────────────┐
-│  PHARMACIES  │◀───▶│  └───────┘  └──────────────┘ │────▶│  REGULATORY      │
-│  (POS)       │     │  ┌───────┐  ┌──────────────┐ │     │  AUTHORITIES     │
-└──────────────┘     │  │ Smart │  │   Consent &  │ │     └──────────────────┘
-                     │  │ Disp. │  │   Identity   │ │
-                     │  └───────┘  └──────────────┘ │
-                     └──────────────┬────────────────┘
-                                    │ ABDM APIs
-                                    ▼
-                        ┌──────────────────┐
-                        │   ABDM GATEWAY   │
-                        │  (NHA Infra)     │
-                        └──────────────────┘
+                        +------------------+
+                        |    CITIZENS       |
+                        |   (ABHA Holders)  |
+                        +--------+---------+
+                                 | SMS Alerts / Web Portal
+                                 v
++--------------+     +-----------------------------+     +------------------+
+|  CLINICS &   |---->|      VYADIHARAH PLATFORM     |<----|  HEALTH OFFICERS |
+|  HOSPITALS   |     |                               |     |  & EPIDEMIOL.    |
++--------------+     |  +-------+  +--------------+ |     +------------------+
+                     |  |  AI   |  | Surveillance | |
++--------------+     |  |Engine |  |    Engine     | |     +------------------+
+|  PHARMACIES  |<--->|  +-------+  +--------------+ |---->|  REGULATORY      |
+|  (POS)       |     |  +-------+  +--------------+ |     |  AUTHORITIES     |
++--------------+     |  | Smart |  |   Consent &  | |     +------------------+
+                     |  | Disp. |  |   Identity   | |
+                     |  +-------+  +--------------+ |
+                     +--------------+----------------+
+                                    | ABDM APIs
+                                    v
+                        +------------------+
+                        |   ABDM GATEWAY   |
+                        |  (NHA Infra)     |
+                        +------------------+
 ```
 
 ---
@@ -88,7 +88,7 @@ It transforms anonymised health records flowing through ABHA into:
 | **Data Backbone** | Amazon HealthLake | FHIR R4 compliant health record storage ensuring interoperability across all Indian health providers |
 | **AI Engine** | Amazon Bedrock (Claude 3.5) | Complex hereditary lineage analysis, clinical summarisation, and preventive roadmap generation |
 | **Predictive ML** | Amazon SageMaker (DeepAR / Prophet / Claude) | Time-series outbreak forecasting and predictive alerting |
-| **Analytics & Viz** | Amazon QuickSight | District-level interactive dashboards with drill-down (national → state → district → facility) |
+| **Analytics & Viz** | Amazon QuickSight | District-level interactive dashboards with drill-down (national -> state -> district -> facility) |
 | **Communication** | Amazon Pinpoint | Automated multi-language SMS alerts for medication adherence & outbreak warnings |
 | **Token Ledger** | Amazon DynamoDB | Cryptographic dispensing token lifecycle management with fraud detection |
 | **Event Bus** | Amazon EventBridge | Asynchronous, event-driven orchestration across all services |
@@ -118,7 +118,7 @@ It transforms anonymised health records flowing through ABHA into:
 **Predictive Alerting**
 - SageMaker-trained DeepAR models forecast outbreak trajectories **14 days ahead**
 - Features include case counts, weather data, population density, seasonal patterns, and historical outbreak indicators
-- Three alert tiers: **Watch** (>50% growth) → **Warning** (>100%) → **Emergency** (>200%)
+- Three alert tiers: **Watch** (>50% growth) -> **Warning** (>100%) -> **Emergency** (>200%)
 - Automated resource-deployment recommendations to pharmacies and hospitals
 
 </td>
@@ -187,9 +187,9 @@ It transforms anonymised health records flowing through ABHA into:
 
 ```
 Vyadiharah/
-├── README.md              ← You are here
-├── requirements.md        ← Detailed functional & non-functional requirements (MoSCoW prioritised)
-└── design.md              ← System design: architecture, component designs, data models,
++-- README.md              <- You are here
++-- requirements.md        <- Detailed functional & non-functional requirements (MoSCoW prioritised)
++-- design.md              <- System design: architecture, component designs, data models,
                               security, deployment, DR, cost estimation, and rollout plan
 ```
 
@@ -199,7 +199,7 @@ Vyadiharah/
 
 | Metric | Target |
 |--------|--------|
-| Outbreak Detection → Alert | ≤ 48 hours |
+| Outbreak Detection -> Alert | ≤ 48 hours |
 | 14-Day Forecast Accuracy | ≥ 70% |
 | Heatmap Refresh Latency | ≤ 15 minutes |
 | Prescription Validation (P99) | ≤ 3 seconds |

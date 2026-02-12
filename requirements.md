@@ -90,7 +90,7 @@ The platform is built entirely on **Amazon Web Services (AWS)**, utilising Healt
 | FR-1.3   | The system SHALL generate a real-time **Health Heatmap of India** at district granularity, updated at least every **15 minutes**.                 | **Must**   |
 | FR-1.4   | The heatmap SHALL support filtering by disease category, date range, severity (mild / moderate / severe / critical), and age cohort.              | **Must**   |
 | FR-1.5   | The system SHALL display the heatmap on interactive **Amazon QuickSight** dashboards accessible to authorised health officers.                    | **Must**   |
-| FR-1.6   | The system SHALL support drill-down from national → state → district → facility levels.                                                           | **Should** |
+| FR-1.6   | The system SHALL support drill-down from national -> state -> district -> facility levels.                                                           | **Should** |
 | FR-1.7   | The system SHALL compute a **District Disease Burden Index (DDBI)** — a composite score reflecting case volume, growth rate, severity mix, and healthcare-capacity utilisation. | **Should** |
 | FR-1.8   | The system SHALL allow export of heatmap data in CSV, GeoJSON, and PDF report formats.                                                            | **Could**  |
 
@@ -245,9 +245,9 @@ The platform is built entirely on **Amazon Web Services (AWS)**, utilising Healt
 
 | Data Category                       | Retention Period | Storage Tier                    |
 |-------------------------------------|------------------|---------------------------------|
-| Health records (FHIR)               | 10 years         | HealthLake (Hot) → S3 Glacier   |
-| Audit logs                          | 7 years          | CloudWatch Logs → S3 Glacier    |
-| Dispensing ledger                   | 7 years          | DynamoDB → S3 Glacier           |
+| Health records (FHIR)               | 10 years         | HealthLake (Hot) -> S3 Glacier   |
+| Audit logs                          | 7 years          | CloudWatch Logs -> S3 Glacier    |
+| Dispensing ledger                   | 7 years          | DynamoDB -> S3 Glacier           |
 | Predictive model artefacts          | 5 years          | S3 Standard                     |
 | SMS delivery logs                   | 3 years          | S3 Standard-IA                  |
 | Anonymised epidemiological datasets | Indefinite       | S3 Intelligent-Tiering          |
@@ -268,24 +268,24 @@ The platform is built entirely on **Amazon Web Services (AWS)**, utilising Healt
 ### 9.1 ABDM Integration Points
 
 ```
-┌──────────────────────────────────────────────────────────────────┐
-│                          ABDM GATEWAY                            │
-│                                                                  │
-│  ┌──────────────┐  ┌──────────────┐  ┌────────────────────────┐  │
-│  │ ABHA Registry│  │ Consent Mgr  │  │ Health Info Exchange    │  │
-│  └──────┬───────┘  └──────┬───────┘  └──────────┬─────────────┘  │
-│         │                 │                      │                │
-└─────────┼─────────────────┼──────────────────────┼────────────────┘
-          │                 │                      │
-          ▼                 ▼                      ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                       VYADIHARAH PLATFORM                       │
-│                                                                 │
-│  ┌────────────┐  ┌──────────────┐  ┌─────────────────────────┐  │
-│  │ Identity   │  │ Consent      │  │ FHIR Ingestion Engine   │  │
-│  │ Service    │  │ Service      │  │ (→ Amazon HealthLake)   │  │
-│  └────────────┘  └──────────────┘  └─────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
++------------------------------------------------------------------+
+|                          ABDM GATEWAY                            |
+|                                                                  |
+|  +--------------+  +--------------+  +------------------------+  |
+|  | ABHA Registry|  | Consent Mgr  |  | Health Info Exchange    |  |
+|  +------+-------+  +------+-------+  +----------+-------------+  |
+|         |                 |                      |                |
++---------+-----------------+----------------------+----------------+
+          |                 |                      |
+          v                 v                      v
++-----------------------------------------------------------------+
+|                       VYADIHARAH PLATFORM                       |
+|                                                                 |
+|  +------------+  +--------------+  +-------------------------+  |
+|  | Identity   |  | Consent      |  | FHIR Ingestion Engine   |  |
+|  | Service    |  | Service      |  | (-> Amazon HealthLake)   |  |
+|  +------------+  +--------------+  +-------------------------+  |
++-----------------------------------------------------------------+
 ```
 
 ### 9.2 AWS Service Dependencies
