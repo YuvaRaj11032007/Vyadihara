@@ -896,60 +896,7 @@ Lambda: DeliverRoadmap
 
 ---
 
-## 12. Phased Rollout Plan
-
-### Phase 1 — Foundation (Months 1–3)
-- Infrastructure setup (VPC, IAM, KMS, CDK pipelines).
-- HealthLake provisioning and FHIR ingestion pipeline.
-- ABDM Gateway integration (sandbox).
-- Core Surveillance Service: data ingestion + basic heatmap.
-
-### Phase 2 — Intelligence (Months 4–6)
-- SageMaker predictive model training on historical IDSP data.
-- Bedrock integration for hereditary risk analysis.
-- QuickSight dashboard (district-level disease intelligence).
-- Pinpoint SMS infrastructure and template setup.
-
-### Phase 3 — Dispensing (Months 7–9)
-- Dispensing Service: token lifecycle, POS API.
-- Pharmacy integration testing (pilot pharmacies).
-- Drug-interaction and allergy cross-referencing.
-- Fraud detection pattern engine.
-
-### Phase 4 — Preventive Care (Months 10–12)
-- Family ABHA linkage with consent flow.
-- Preventive roadmap generation pipeline.
-- Outbreak-triggered automated alert workflows.
-- Multi-language SMS support.
-
-### Phase 5 — Pilot & Hardening (Months 13–15)
-- 10-district pilot deployment.
-- Performance tuning, chaos engineering.
-- Security audit and penetration testing.
-- ABDM certification and NHA approval.
-
-### Phase 6 — National Scale (Months 16–24)
-- Progressive rollout to all 770+ districts.
-- Auto-scaling validation.
-- DR drill execution.
-- Continuous model retraining and accuracy monitoring.
-
----
-
-## 13. Open Design Questions
-
-| #  | Question                                                                                     | Status  | Owner           |
-|----|----------------------------------------------------------------------------------------------|---------|-----------------|
-| 1  | Should HealthLake be supplemented with OpenSearch for free-text search across clinical notes? | Open    | Data Architect  |
-| 2  | Is Aadhaar-based biometric auth required at pharmacy POS for v1.0, or is ABHA QR sufficient? | Open    | Product Owner   |
-| 3  | Should the dispensing ledger use DynamoDB or a blockchain-based immutable ledger (QLDB)?      | Open    | Security Lead   |
-| 4  | What is the maximum SageMaker model retraining frequency that the budget supports?            | Open    | Finance / ML    |
-| 5  | Should preventive roadmaps require clinician approval before SMS delivery in all cases?       | Open    | Clinical Lead   |
-| 6  | What is the offline-mode strategy for pharmacy POS in areas without reliable internet?        | Open    | Solutions Arch. |
-
----
-
-## 14. References
+## 12. References
 
 | #  | Reference                                                                                    |
 |----|----------------------------------------------------------------------------------------------|
