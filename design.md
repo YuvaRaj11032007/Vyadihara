@@ -911,5 +911,17 @@ Lambda: DeliverRoadmap
 | 9  | `requirements.md` — Vyadiharah Requirements Specification v1.0.0                             |
 
 ---
+## Important Note & Disclaimer
+
+### Prototype Status:
+- Vyadiharah is currently a prototype model and conceptual demonstration for the AI for Bharat Hackathon 2026. It is designed as an intelligence layer to sit on top of the existing ABHA (Ayushman Bharat Health Account) infrastructure and is not an official government-affiliated service.
+
+### Data Integrity:
+- In compliance with hackathon safety guidelines, all data utilized for this prototype is entirely synthetic or derived from publicly available datasets. No real-world Protected Health Information (PHI) or private government databases have been accessed or stored.
+
+### Liability:
+- This system is for informational and research purposes only. The AI-generated outputs, including disease risk assessments and preventive roadmaps, should not be construed as clinical diagnoses or professional medical advice.
+
+---
 
 *End of System Design Document — Vyadiharah v1.0*
